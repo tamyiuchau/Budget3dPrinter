@@ -1,6 +1,7 @@
 import serial
 import struct
 import math
+import os
 #Constants
 R_MAX = 400 #max rotation
 R_MIN = 0
@@ -48,5 +49,13 @@ def main():
             else:
                 yield calculate(rr,rh,rd)
 if __name__ == "__main__":
-    for i in main():
-        print(i)
+	with open("tmp.asc","w") as f:
+		for i in main():
+			if len(input)==3:
+				f.write("%.3f %.3f %.3f" % input)
+	from pc2stl import pc2stl
+	pc2stl("tmp.asc")
+	#cleanup
+	os.remove("tmp.asc")
+	
+	
