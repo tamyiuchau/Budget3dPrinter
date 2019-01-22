@@ -16,7 +16,7 @@
 SFEVL53L1X dS;//I2C
 const int stepsPerRevolution = 200;  // Stepper steps per revolution
 const int maxHeight = -600; //Max height of the scanner track
-const int repeatMeasurement = 10; //10 measurement averages per pt
+const int repeatMeasurement = 4; //10 measurement averages per pt
 String i;
 
 //Tmp vairables
@@ -32,7 +32,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("[info] Budget 3D Printer Control System");
   // set the speed at 60 rpm:
-  StepR.setSpeed(10);
+  StepR.setSpeed(60);
   StepZ.setSpeed(60);
   // initialize the serial port:
   //Set the endstop power pin
@@ -48,7 +48,7 @@ void setup() {
   {
     Serial.println("[info] VL53L1X initialized");
   }
-  
+  dS.setDistanceModeShort();
   //Hardware Testing
   Serial.println("[OK] Ready!");
 }
@@ -69,11 +69,11 @@ void loop() {
       for (int k =0; k > -600; k-=5){
         for (int j =0; j < 200; j++){
           rotate(1);
-          delay(100);
           scan(k,j);
+          delay(20);
         }
         moveUp(-5);
-        delay(100);
+        delay(200);
       }
       Serial.println("[info] Scanning Ended");
       delay(3000);
