@@ -18,7 +18,7 @@ D_RATIO = 1 # 1mm
 TX_FMT = 'LL'
 RX_FMT = 'LLL' # l: signed long, L: unsigned long, f float
 RX_L = struct.calcsize(RX_FMT)
-DEFAULT_FILE = "./test2-1.txt"
+DEFAULT_FILE = "./test6.txt"
 
 def calculate(r,h,d,downangle = 0):
     d = (d-D_MAX)
@@ -50,19 +50,23 @@ def main():
                 break
             else:
                 yield calculate(rr,rh,rd)
-def point_from_file(f = DEFAULT_FILE):
+def hrd_from_file(f = DEFAULT_FILE):
     with open(f,"r") as f:
         for _ in range(13):
             f.readline()
         for i in f:
             try:
                 h,r,d = [int(j) for j in i.split()]
-                if d>D_MAX or d<1:
-                    continue
-                yield calculate(r,h,d)
+                yield h,r,d
             except Exception as e:
                 print(e)
                 break
+def point_from_file(f = DEFAULT_FILE):
+    for h,r,d in hrd_from_file(f):
+        if d>D_MAX or d<1:
+            continue
+        yield calculate(r,h,d)
+            
 def avg(f = "./test5.txt"):
     ds = []
     with open(f,"r") as f:
@@ -90,19 +94,19 @@ def tuning(f = DEFAULT_FILE):
     Calculation
     
     """
-    side = 100 #mm
-    p2, p1 = None
-    p = None
+    side = 32 #mm
     layer =[]
-    prev_h = 0
-    layer_num = -1
-    for i in point_from_file():
-        d = i[-1]
+    prev_h = -1
+    #layer_num = -1
+    for i in hrd_from_file(f):
+        h = i[0]
+        #print(h,prev_h)
         if h > prev_h:
-            layer_num += 1
-            layer[layer_num] = []
+            #layer_num += 1
+            layer.append([])
+            #print(layer)
             prev_h = h
-        layer[layer_num].append(i)
+        layer[-1].append(i)
     #taking one layer
     points = layer[5] #chose a layer to avoid noise from bottom
     dr = 1 # delta radian
@@ -113,10 +117,11 @@ def tuning(f = DEFAULT_FILE):
         points[0:]     +points[:0],
         points[0+dr:]  +points[:0+dr],
         points[0+2*dr:]+points[:0+2*dr]):
-        if p2[2]>= p1[2] and p1[2] =< p[2]: #not cave , dD/dr <= 0:
+        #print(p2,p1,p0)
+        if p2[2]>= p1[2] and p1[2] <= p0[2]: #not cave , dD/dr <= 0:
            mid_pts.append(p1)
            mid_d.append(p1[2])
-    #D = d_min +- Ox or Oy
+    #D = d_max - side/2 +- Ox or Oy
     #Let Oy >= Ox
     l = min(mid_d) #D - Oy
     #2 Oy >= 2 Ox
@@ -124,10 +129,13 @@ def tuning(f = DEFAULT_FILE):
     for i in mid_d:
         Oy_ds.append(i-l)
     Oy = max(Oy_ds)//2
-    D_min = l+ Oy
-    return D_min
+    D_MAX = l+ Oy + side//2
+    return D_MAX
 
 if __name__ == "__main__":
+    #tuning function
+    #D_MAX = tuning()
+    print(D_MAX)
     with open("tmp.asc","w") as f:
         for i in point_from_file():
             #print(i)
@@ -137,6 +145,7 @@ if __name__ == "__main__":
     pc2stl("tmp.asc")
     #cleanup
     #os.remove("tmp.asc")"""
+    
     
     
     
