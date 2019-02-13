@@ -2,6 +2,7 @@ import serial
 import struct
 import math
 import os
+import random
 #Constants
 R_MAX = 200 #max rotation
 R_MIN = 0
@@ -19,7 +20,9 @@ TX_FMT = 'LL'
 RX_FMT = 'LLL' # l: signed long, L: unsigned long, f float
 RX_L = struct.calcsize(RX_FMT)
 DEFAULT_FILE = "./test6.txt"
-
+def noise(iter,low=-13,high=13):
+    for i in iter:
+        yield [j+random.uniform(low,high) for j in i]
 def calculate(r,h,d,downangle = 0):
     d = (d-D_MAX)
     dd = d*D_RATIO
